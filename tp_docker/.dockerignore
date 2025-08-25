@@ -1,0 +1,57 @@
+# Python bytecode / build
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Tooling & IDE
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+
+# Tests / caches
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Secrets & configs (don’t copy into images)
+.env
+.env.*
+*.pem
+*.key
+
+# VCS
+.git/
+.gitignore
+
+# Data you don’t need in the image
+*.sqlite*
+*.db
+*.csv
+*.parquet
