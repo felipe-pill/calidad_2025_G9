@@ -1,4 +1,4 @@
-# DOCKER_SETUP.md
+# DOCKER SETUP
 
 ## Cómo levantar el proyecto con Docker
 
@@ -31,7 +31,20 @@ Abre tu navegador y visita:
 http://localhost:5000
 ```
 
+
+## Ejecutar sin construir (usando Docker Hub)
+
+Para pruebas rápidas podés usar la imagen publicada y evitar el build local:
+
+```bash
+docker pull felipepillichody/contador-visitas:1.0.0
+docker rm -f visitas 2>/dev/null || true
+docker run -d -p 5000:5000 --name visitas felipepillichody/contador-visitas:1.0.0
+```
+
 ---
+
+# PREGUNTAS para aprender
 
 ## 1. ¿Qué pasa si corremos la imagen de Docker sin asignar ninguna flag a `docker run`? ¿Podemos usar la misma terminal para correr otros comandos?
 
