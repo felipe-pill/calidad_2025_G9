@@ -1,64 +1,94 @@
-from flask import Flask
-import redis
-import time
 import os
+import time
+import redis
+from flask import Flask
+from splitio import get_factory
 
 app = Flask(__name__)
 
+# ------------ Redis helpers ------------
 def wait_for_redis():
-    """Esperar a que Redis esté disponible"""
-    max_retries = 10
-    retry_delay = 1
-    
-    for i in range(max_retries):
+    """Wait until Redis is available (same behavior as your current app)."""
+    redis_host = os.getenv('REDIS_HOST', 'redis')
+    redis_port = int(os.getenv('REDIS_PORT', '6379'))
+    client = redis.Redis(host=redis_host, port=redis_port, db=0)
+    for _ in range(30):
         try:
-            redis_client = redis.Redis(host='localhost', port=6379, db=0)
-            redis_client.ping()
-            print("✅ Redis conectado exitosamente")
-            return redis_client
-        except redis.ConnectionError:
-            print(f"⏳ Esperando por Redis... ({i+1}/{max_retries})")
-            time.sleep(retry_delay)
-    
-    raise Exception("❌ No se pudo conectar a Redis")
+            client.ping()
+            return client
+        except Exception:
+            time.sleep(1)
+    raise RuntimeError("Redis not available")
 
+# ------------ Split initialization (minimal) ------------
+SPLIT_API_KEY = os.getenv("SPLIT_SDK_API_KEY", "").strip()
+SPLIT_FEATURE_NAME = os.getenv("SPLIT_FEATURE_NAME", "background_color").strip()
+split_client = None
+
+if SPLIT_API_KEY:
+    try:
+        split_factory = get_factory(SPLIT_API_KEY)
+        split_client = split_factory.client()
+        print("✅ Split client created")
+    except Exception as e:
+        print(f"⚠️ Split init warning: {e}")
+
+# ------------ Routes ------------
 @app.route('/')
 def contador_visitas():
     try:
         redis_client = wait_for_redis()
         visitas = redis_client.incr('visitas')
-        return f'''
+
+        # Ask Split for treatment (probabilistic rollout)
+        treatment = 'control'
+        bg_style = ''
+        try:
+            if split_client:
+                # Use a consistent key for Split treatment
+                treatment = split_client.get_treatment(
+                    key='default_key',  # Use a static or session-based key
+                    feature_name=SPLIT_FEATURE_NAME
+                )
+                print(f"ℹ️ Split returned treatment={treatment}")
+                if treatment == 'red':
+                    bg_style = 'background-color: red;'
+                elif treatment == 'green':
+                    bg_style = 'background-color: green;'
+        except Exception as e:
+            print(f"⚠️ Split get_treatment warning: {e}")
+
+        return f"""
         <html>
-            <body style="font-family: Arial; text-align: center; padding: 50px;">
+            <body style="font-family: Arial; text-align: center; padding: 50px; {bg_style}">
                 <h1>📊 Contador de Visitas</h1>
                 <p style="font-size: 24px;">¡Número de visitas: <strong>{visitas}</strong>! 🎉</p>
                 <p>✅ Redis funcionando correctamente</p>
+                <p><small>treatment = {treatment}</small></p>
                 <a href="/reiniciar">🔄 Reiniciar contador</a> | 
                 <a href="/health">❤️ Health check</a>
             </body>
         </html>
-        '''
+        """
     except Exception as e:
-        return f'❌ Error: {str(e)}'
+        return f"❌ Error: {e}"
 
 @app.route('/reiniciar')
-def reiniciar_contador():
+def reiniciar():
     try:
         redis_client = wait_for_redis()
         redis_client.set('visitas', 0)
-        return '✅ ¡Contador reiniciado! <a href="/">Volver</a>'
+        return "🔄 Contador reiniciado a 0."
     except Exception as e:
-        return f'❌ Error: {str(e)}'
+        return f"❌ Error: {e}"
 
 @app.route('/health')
-def health_check():
+def health():
     try:
-        redis_client = wait_for_redis()
-        redis_client.ping()
-        return '✅ Health check: Todo funciona correctamente (Flask + Redis)'
-    except Exception as e:
-        return f'❌ Health check failed: {str(e)}'
+        wait_for_redis()
+        return "OK"
+    except Exception:
+        return "NOT_OK", 500
 
 if __name__ == '__main__':
-    print("🚀 Iniciando aplicación Flask + Redis...")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', '5000')))
