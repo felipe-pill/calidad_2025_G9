@@ -42,3 +42,34 @@ python FROGGER_RUN.py
 
 - If you see “X11 connection rejected”, run `xhost +local:docker` again.
 - For ALSA instead of PulseAudio: add `--device /dev/snd -e SDL_AUDIODRIVER=alsa`.
+
+
+
+
+## How to Run Directly from Docker Hub
+
+This image has also been pushed to a Docker Hub repository. You can run it directly by following these steps:
+
+### Pull the Image
+```bash
+docker pull felipepillichody/frogger:latest
+```
+
+### Allow X Access (once per session)
+```bash
+xhost +local:docker
+```
+
+### Run the Container
+```bash
+docker run --rm -it \
+  --user $(id -u):$(id -g) \
+  -e DISPLAY=$DISPLAY \
+  -e SDL_VIDEODRIVER=x11 \
+  -e XDG_RUNTIME_DIR=/run/user/$(id -u) \
+  -e PULSE_SERVER=unix:/run/user/$(id -u)/pulse/native \
+  -e PULSE_COOKIE=/run/user/$(id -u)/pulse/cookie \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+  -v /run/user/$(id -u)/pulse:/run/user/$(id -u)/pulse \
+  felipepillichody/frogger:latest
+```
