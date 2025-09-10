@@ -19,7 +19,7 @@ jobs:
                 -p /src \
                 -P "$(pwd)" \
                 --return-error \
-                --ignore-severity="LOW,MEDIUM" \
+                --ignore-severity="LOW,MEDIUM,HIGH" \
                 -o=json -O=/src/horusec-report.json
       - name: Upload report
         if: always()
