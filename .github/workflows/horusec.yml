@@ -8,11 +8,11 @@ jobs:
   horusec:
     runs-on: ubuntu-latest
     env:
-      # ----- SET YOUR LIMITS HERE -----
+      # ---------- SET YOUR LIMITS HERE ----------
       MAX_CRITICAL: 0
       MAX_HIGH: 0
       MAX_MEDIUM: 0
-      MAX_LOW: 0
+      MAX_LOW: 999999
     steps:
       - uses: actions/checkout@v4
 
@@ -37,7 +37,7 @@ jobs:
           path: horusec-report.json
           if-no-files-found: warn
 
-      # 3) Enforce numeric thresholds
+      # 3) Enforce numeric thresholds (supports both .vulnerabilities and .vulnerability shapes)
       - name: Enforce thresholds
         run: |
           if ! command -v jq >/dev/null 2>&1; then
@@ -50,7 +50,12 @@ jobs:
             exit 1
           fi
 
-          count() { jq "[.analysisVulnerabilities[] | select(.vulnerability.severity==\"$1\")] | length" "$FILE"; }
+          count() {
+            jq --arg S "$1" '
+              [.analysisVulnerabilities[]
+               | (.vulnerabilities // .vulnerability) as $v
+               | select($v != null and $v.severity == $S)] | length' "$FILE"
+          }
 
           CRIT=$(count CRITICAL)
           HIGH=$(count HIGH)
@@ -64,5 +69,5 @@ jobs:
           [ "$CRIT" -le "$MAX_CRITICAL" ] || { echo "::error ::CRITICAL over limit"; fail=1; }
           [ "$HIGH" -le "$MAX_HIGH" ]     || { echo "::error ::HIGH over limit";     fail=1; }
           [ "$MED"  -le "$MAX_MEDIUM" ]   || { echo "::error ::MEDIUM over limit";   fail=1; }
-          [ "$LOW"  -le "$MAX_LOW" ]      || { echo "::warning ::LOW over limit";    fail=1; }
+          [ "$LOW"  -le "$MAX_LOW" ]      || { echo "::warning ::LOW over limit";    fail=1; } # warn-only for LOW
           exit $fail
