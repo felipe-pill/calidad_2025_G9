@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Run Horusec
         run: |
           docker run --rm \
@@ -22,7 +23,12 @@ jobs:
                 --return-error \
                 --ignore-severity="INFO,LOW,MEDIUM,UNKNOWN" \
                 -o=json -O=/src/horusec-report.json
-      - uses: actions/upload-artifact@v4
+
+      # <-- ensure this ALWAYS runs, even if the step above fails
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: horusec-report
           path: horusec-report.json
+          if-no-files-found: warn
