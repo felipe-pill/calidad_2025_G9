@@ -1,0 +1,23 @@
+name: SAST (Horusec)
+on: [push, pull_request]
+
+jobs:
+  horusec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Horusec
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$PWD:/src" \
+            horuszup/horusec-cli:v2.9.0-beta.3 \
+              horusec start \
+                -p /src \
+                -P "$(pwd)" \
+                --config-file-path=/src/horusec-config.json \
+                -o=json -O=/src/horusec-report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: horusec-report
+          path: horusec-report.json
