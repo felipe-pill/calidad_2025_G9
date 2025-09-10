@@ -7,8 +7,17 @@ on:
 jobs:
   horusec:
     runs-on: ubuntu-latest
+    # <<< Tweak your max allowed findings here >>>
+    env:
+      MAX_CRITICAL: 0
+      MAX_HIGH: 0
+      MAX_MEDIUM: 0
+      MAX_LOW: 999999   # effectively ignored; set as you like
     steps:
       - uses: actions/checkout@v4
+
+      # 1) Run Horusec WITHOUT failing the job (no --return-error).
+      #    Always produce JSON so we can enforce numeric thresholds ourselves.
       - name: Run Horusec
         run: |
           docker run --rm \
@@ -18,9 +27,9 @@ jobs:
               horusec start \
                 -p /src \
                 -P "$(pwd)" \
-                --return-error \
-                --ignore-severity="LOW,MEDIUM,HIGH" \
-                -o=json -O=/src/horusec-report.json
+                -o=json -O=/src/horusec-report.json || true
+
+      # 2) Upload the report even if thresholds later fail
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
@@ -28,3 +37,35 @@ jobs:
           name: horusec-report
           path: horusec-report.json
           if-no-files-found: warn
+
+      # 3) Enforce numeric thresholds per severity
+      - name: Enforce thresholds
+        run: |
+          # make sure jq is present
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+          FILE="horusec-report.json"
+          if [ ! -s "$FILE" ]; then
+            echo "horusec-report.json not found or empty; failing for safety."
+            exit 1
+          fi
+
+          count() { jq "[.analysisVulnerabilities[] | select(.vulnerability.severity==\"$1\")] | length" "$FILE"; }
+
+          CRIT=$(count CRITICAL)
+          HIGH=$(count HIGH)
+          MED=$(count MEDIUM)
+          LOW=$(count LOW)
+
+          echo "Found -> CRITICAL=$CRIT HIGH=$HIGH MEDIUM=$MED LOW=$LOW"
+          echo "Allowed-> CRITICAL=$MAX_CRITICAL HIGH=$MAX_HIGH MEDIUM=$MAX_MEDIUM LOW=$MAX_LOW"
+
+          fail=0
+          [ "$CRIT" -le "$MAX_CRITICAL" ] || { echo "::error ::CRITICAL over limit"; fail=1; }
+          [ "$HIGH" -le "$MAX_HIGH" ]     || { echo "::error ::HIGH over limit";     fail=1; }
+          [ "$MED"  -le "$MAX_MEDIUM" ]   || { echo "::error ::MEDIUM over limit";   fail=1; }
+          [ "$LOW"  -le "$MAX_LOW" ]      || { echo "::warning ::LOW over limit";    fail=1; } # optional: make LOW warn-only
+
+          exit $fail
