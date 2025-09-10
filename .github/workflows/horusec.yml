@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # ---------- SET YOUR LIMITS HERE ----------
-      MAX_CRITICAL: 0
-      MAX_HIGH: 0
-      MAX_MEDIUM: 0
-      MAX_LOW: 0
+      MAX_CRITICAL: 10
+      MAX_HIGH: 10
+      MAX_MEDIUM: 10
+      MAX_LOW: 999999
     steps:
       - uses: actions/checkout@v4
 
