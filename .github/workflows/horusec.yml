@@ -12,7 +12,7 @@ jobs:
       MAX_CRITICAL: 0
       MAX_HIGH: 0
       MAX_MEDIUM: 0
-      MAX_LOW: 999999   # effectively ignored; set as you like
+      MAX_LOW: 0   # effectively ignored; set as you like
     steps:
       - uses: actions/checkout@v4
 
