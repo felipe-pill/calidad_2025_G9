@@ -1,7 +1,0 @@
-{
-  "horusecCliProjectPath": "./",
-  "horusecCliReturnErrorIfFoundVulnerability": true,
-  "horusecCliSeveritiesToIgnore": ["INFO", "LOW", "MEDIUM", "UNKNOWN"],
-  "horusecCliPrintOutputType": "json",
-  "horusecCliJsonOutputFilepath": "horusec-report.json"
-}
