@@ -1,0 +1,11 @@
+{
+  "horusecCliProjectPath": "./",
+  "horusecCliReturnErrorIfFoundVulnerability": true,
+  "horusecCliSeveritiesToIgnore": ["INFO", "LOW", "MEDIUM", "UNKNOWN"],
+  "horusecCliPrintOutputType": "json",
+  "horusecCliJsonOutputFilepath": "horusec-report.json",
+  "horusecCliFilesOrPathsToIgnore": [
+    "**/.venv/**", "**/__pycache__/**", "**/.git/**",
+    "**/res/**", "**/*.png", "**/*.jpg", "**/*.wav", "**/*.mp3", "**/*.ogg"
+  ]
+}
