@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"demo-v1","namespace":"canary"},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":5678}],"selector":{"app":"demo","version":"v1"},"type":"ClusterIP"}}
+  creationTimestamp: "2025-10-16T23:25:52Z"
+  name: demo-v1
+  namespace: canary
+  resourceVersion: "1711"
+  uid: 264124af-280d-4aa6-a7c7-bcd30ee38d18
+spec:
+  clusterIP: 10.99.13.7
+  clusterIPs:
+  - 10.99.13.7
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 5678
+  selector:
+    app: demo
+    version: v1
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
