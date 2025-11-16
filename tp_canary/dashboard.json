@@ -315,12 +315,56 @@
       "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "loki",
+        "uid": "af49g6hv1vsowa"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "12.2.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "af49g6hv1vsowa"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "{namespace=\"canary\"}\n",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Application logs – namespace canary",
+      "type": "logs"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 26
       },
       "id": 5,
       "panels": [],
@@ -393,7 +437,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 18
+        "y": 27
       },
       "id": 4,
       "options": {
@@ -491,7 +535,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 18
+        "y": 27
       },
       "id": 1,
       "options": {
@@ -575,7 +619,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 26
+        "y": 35
       },
       "id": 3,
       "options": {
@@ -697,7 +741,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 35
       },
       "id": 2,
       "options": {
@@ -737,12 +781,12 @@
     "list": []
   },
   "time": {
-    "from": "now-3h",
+    "from": "now-150m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "New dashboard",
+  "title": "Canary - Overview",
   "uid": "admf5ls",
-  "version": 11
+  "version": 15
 }
